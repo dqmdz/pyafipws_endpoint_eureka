@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  facturacion:
+    build: .
+    restart: always
+    environment:
+      - CUIT=23236938409
+      - CERT=dqmdz.crt
+      - PRIVATEKEY=dqmdz.key
+      - PRODUCTION=FALSE
