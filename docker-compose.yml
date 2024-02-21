@@ -2,7 +2,13 @@ version: "3.9"
 
 services:
   facturacion:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+      cache_from: 
+        - "nonexistent:latest"
+    ports:
+      - 8281:8281
     restart: always
     environment:
       - CUIT=23236938409
