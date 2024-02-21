@@ -72,6 +72,10 @@ def facturar(json_data: dict, production: bool = False):
         imp_total=json_data.get("total"),
         imp_neto=json_data.get("neto", 0) + json_data.get("neto105", 0),
         imp_iva=json_data.get("iva", 0) + json_data.get("iva105", 0),
+        asociado_tipo_afip=json_data.get("asociado_tipo_afip", None),
+        asociado_punto_venta=json_data.get("asociado_punto_venta", None),
+        asociado_numero_comprobante=json_data.get("asociado_numero_comprobante", None),
+        asociado_fecha_comprobante=json_data.get("asociado_fecha_comprobante", None),
     )
     neto = json_data.get("neto")
     iva = json_data.get("iva")
@@ -83,6 +87,8 @@ def facturar(json_data: dict, production: bool = False):
     if iva105 > 0:
         logger.info("agregando iva 10.5 ...")
         cbte.agregar_iva(4, neto105, iva105)
+    if not cbte.encabezado["asociado_numero_comprobante"] is None:
+        cbte.agregar_asociado()
     logger.info("autorizando comprobante ...")
     ok = cbte.autorizar(wsfev1)
     nro = cbte.encabezado["cbte_nro"]
@@ -129,12 +135,15 @@ class Comprobante:
             cae="",
             resultado="",
             fch_venc_cae="",
+            asociado_tipo_afip=None,
+            asociado_punto_venta=None,
+            asociado_numero_comprobante=None,
+            asociado_fecha_comprobante=None,
         )
         self.encabezado.update(kwargs)
         if self.encabezado["fecha_serv_desde"] or self.encabezado["fecha_serv_hasta"]:
             self.encabezado["concepto"] = 3  # servicios
         self.cmp_asocs = []
-        self.items = []
         self.ivas = {}
 
     def agregar_iva(self, iva_id, base_imp, importe):
@@ -143,6 +152,17 @@ class Comprobante:
         )
         iva["base_imp"] += base_imp
         iva["importe"] += importe
+
+    def agregar_asociado(self):
+        self.cmp_asocs.append(
+            {
+                "tipo": self.encabezado["asociado_tipo_afip"],
+                "pto_vta": self.encabezado["asociado_punto_venta"],
+                "nro": self.encabezado["asociado_numero_comprobante"],
+                "cuit": CUIT,
+                "fecha": self.encabezado["asociado_fecha_comprobante"],
+            }
+        )
 
     def autorizar(self, wsfev1):
         "Prueba de autorización de un comprobante (obtención de CAE)"
