@@ -191,6 +191,7 @@ class Comprobante:
         wsfev1.CAESolicitar()
 
         if wsfev1.ErrMsg:
+            logger.info(wsfev1.ErrMsg)
             raise RuntimeError(wsfev1.ErrMsg)
 
         for obs in wsfev1.Observaciones:
