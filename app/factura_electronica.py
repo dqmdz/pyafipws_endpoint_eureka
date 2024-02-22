@@ -70,8 +70,8 @@ def facturar(json_data: dict, production: bool = False):
         tipo_doc=json_data.get("tipo_documento"),
         nro_doc=json_data.get("documento"),
         imp_total=json_data.get("total"),
-        imp_neto=json_data.get("neto", 0) + json_data.get("neto105", 0),
-        imp_iva=json_data.get("iva", 0) + json_data.get("iva105", 0),
+        imp_neto=round(json_data.get("neto", 0) + json_data.get("neto105", 0), 2),
+        imp_iva=round(json_data.get("iva", 0) + json_data.get("iva105", 0), 2),
         asociado_tipo_afip=json_data.get("asociado_tipo_afip", None),
         asociado_punto_venta=json_data.get("asociado_punto_venta", None),
         asociado_numero_comprobante=json_data.get("asociado_numero_comprobante", None),
@@ -152,6 +152,7 @@ class Comprobante:
         )
         iva["base_imp"] += base_imp
         iva["importe"] += importe
+        logger.info(self.ivas)
 
     def agregar_asociado(self):
         self.cmp_asocs.append(
@@ -165,9 +166,9 @@ class Comprobante:
         )
 
     def autorizar(self, wsfev1):
-        "Prueba de autorización de un comprobante (obtención de CAE)"
 
         # datos generales del comprobante:
+        logger.info("buscando número ...")
         if not self.encabezado["cbte_nro"]:
             # si no se especifíca nro de comprobante, autonumerar:
             ult = wsfev1.CompUltimoAutorizado(
@@ -177,17 +178,21 @@ class Comprobante:
 
         self.encabezado["cbt_desde"] = self.encabezado["cbte_nro"]
         self.encabezado["cbt_hasta"] = self.encabezado["cbte_nro"]
+        logger.info("creando factura ...")
         wsfev1.CrearFactura(**self.encabezado)
 
         # agrego un comprobante asociado (solo notas de crédito / débito)
+        logger.info("agregando asociados ...")
         for cmp_asoc in self.cmp_asocs:
             wsfev1.AgregarCmpAsoc(**cmp_asoc)
 
         # agrego el subtotal por tasa de IVA (iva_id 5: 21%):
+        logger.info("agregandos ivas ...")
         for iva in self.ivas.values():
             wsfev1.AgregarIva(**iva)
 
         # llamo al websevice para obtener el CAE:
+        logger.info("solicitando ...")
         wsfev1.CAESolicitar()
 
         if wsfev1.ErrMsg:
