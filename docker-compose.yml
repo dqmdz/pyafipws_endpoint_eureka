@@ -11,7 +11,7 @@ services:
       - 8281:8281
     restart: always
     environment:
-      - CUIT=23236938409
-      - CERT=dqmdz.crt
-      - PRIVATEKEY=dqmdz.key
-      - PRODUCTION=FALSE
+      - CUIT=30518594466
+      - CERT=um.crt
+      - PRIVATEKEY=um.key
+      - PRODUCTION=TRUE
