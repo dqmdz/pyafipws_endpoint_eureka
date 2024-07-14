@@ -1,4 +1,4 @@
-FROM python:3.10-alpine as builder
+FROM python:3.10-alpine AS builder
 
 RUN apk update
 RUN apk add git

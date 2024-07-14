@@ -1,4 +1,5 @@
 import os
+import py_eureka_client.eureka_client as eureka_client
 
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
@@ -12,6 +13,10 @@ production = True if os.getenv('PRODUCTION') == "TRUE" else False
 logger.info(f'production={production}/{os.getenv("PRODUCTION")}')
 
 app = Flask(__name__)
+
+eureka_client.init(eureka_server='http://eureka-service:8761',
+                   app_name='pyafipws-service',
+                   instance_port=8281)
 
 @app.route('/facturacionService', methods=['POST'])
 def facturacion():
