@@ -25,4 +25,4 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-CMD ["flask", "--app", "app.service", "run", "-host", "0.0.0.0", "--debug"] # port 5000
+CMD ["flask", "--app", "app.service", "run", "--host", "0.0.0.0", "--debug"] # port 5000
