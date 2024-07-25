@@ -27,8 +27,8 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # Copia los archivos secretos
-COPY secret1.txt /app/secrets/secret1.txt
-COPY secret2.txt /app/secrets/secret2.txt
+COPY dqmdz.crt dqmdz.crt
+COPY dqmdz.key dqmdz.key
 
 EXPOSE 8281
 
