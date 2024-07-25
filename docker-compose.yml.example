@@ -1,10 +1,9 @@
-version: "3.9"
-
 services:
-  facturacion:
+
+  pyafipws-service:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.local
       cache_from: 
         - "nonexistent:latest"
     ports:
@@ -15,3 +14,4 @@ services:
       - CERT=dqmdz.crt
       - PRIVATEKEY=dqmdz.key
       - PRODUCTION=FALSE
+      - EUREKA_PORT=8761

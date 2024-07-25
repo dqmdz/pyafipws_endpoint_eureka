@@ -1,8 +1,8 @@
-FROM python:3.10-alpine as builder
+FROM python:3.10-alpine AS builder
 
 RUN apk update
 RUN apk add git
-RUN git clone https://github.com/reingart/pyafipws.git
+RUN git clone --branch v2024.07.25 --single-branch https://github.com/dqmdz/pyafipws.git
 WORKDIR /pyafipws
 RUN python -m pip install --upgrade pip
 RUN if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
