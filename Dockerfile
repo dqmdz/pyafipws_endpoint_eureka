@@ -30,4 +30,4 @@ COPY . .
 COPY dqmdz.crt dqmdz.crt
 COPY dqmdz.key dqmdz.key
 
-CMD ["flask", "--app", "app.service", "run", "-host", "0.0.0.0", "--debug"] # port 5000
+CMD ["flask", "--app", "app.service", "run", "--host", "0.0.0.0", "--debug"] # port 5000
