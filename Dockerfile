@@ -1,3 +1,4 @@
+# Build stage
 FROM python:3.10-alpine AS builder
 
 RUN apk update && apk add git
@@ -10,7 +11,7 @@ RUN if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
 RUN python setup.py install
 
 
-# App
+# Final stage
 FROM python:3.10-alpine
 
 WORKDIR /app
@@ -24,6 +25,10 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 COPY . .
+
+# Copia los archivos secretos
+COPY secret1.txt /app/secrets/secret1.txt
+COPY secret2.txt /app/secrets/secret2.txt
 
 EXPOSE 8281
 
