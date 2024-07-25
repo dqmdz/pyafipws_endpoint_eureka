@@ -11,6 +11,7 @@ load_dotenv()
 
 production = True if os.getenv('PRODUCTION') == "TRUE" else False
 eureka_port = int(os.getenv('EUREKA_PORT', 8761))
+instance_port = int(os.getenv('INSTANCE_PORT', 5000))
 
 logger.info(f'production={production}/{os.getenv("PRODUCTION")}')
 
@@ -18,7 +19,7 @@ app = Flask(__name__)
 
 eureka_client.init(eureka_server=f'http://eureka-service:{eureka_port}',
                    app_name='pyafipws-service',
-                   instance_port=8281)
+                   instance_port=instance_port)
 
 @app.route('/api/afipws/test', methods=['GET'])
 def test():
