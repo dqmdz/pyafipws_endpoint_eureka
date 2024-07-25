@@ -15,3 +15,4 @@ services:
       - PRIVATEKEY=dqmdz.key
       - PRODUCTION=FALSE
       - EUREKA_PORT=8761
+      - INSTANCE_PORT=5000
