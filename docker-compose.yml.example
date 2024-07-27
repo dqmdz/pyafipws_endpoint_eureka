@@ -4,8 +4,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.local
-      cache_from: 
-        - "nonexistent:latest"
     ports:
       - 8281:8281
     restart: always
