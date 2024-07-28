@@ -22,8 +22,8 @@ jobs:
 
     - name: Create secret files
       run: |
-        echo "${{ secrets.USER_CRT }}" > ${{ secrets.CERT_NAME }}.crt
-        echo "${{ secrets.USER_KEY }}" > ${{ secrets.CERT_NAME }}.key
+        echo "${{ secrets.USER_CRT }}" > user.crt
+        echo "${{ secrets.USER_KEY }}" > user.key
 
     - name: Set VERSION environment variable
       id: version

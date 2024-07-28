@@ -27,8 +27,8 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # Copia los archivos secretos
-COPY dqmdz.crt dqmdz.crt
-COPY dqmdz.key dqmdz.key
+COPY user.crt user.crt
+COPY user.key user.key
 
 ENV FLASK_APP=app.service
 ENV FLASK_RUN_HOST=0.0.0.0
