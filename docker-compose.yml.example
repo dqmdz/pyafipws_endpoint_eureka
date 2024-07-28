@@ -9,8 +9,8 @@ services:
     restart: always
     environment:
       - CUIT=23236938409
-      - CERT=dqmdz.crt
-      - PRIVATEKEY=dqmdz.key
+      - CERT=user.crt
+      - PRIVATEKEY=user.key
       - PRODUCTION=FALSE
       - EUREKA_PORT=8761
       - INSTANCE_PORT=5000
