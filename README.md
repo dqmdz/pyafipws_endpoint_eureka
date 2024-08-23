@@ -5,4 +5,4 @@ repository based on https://github.com/reingart/pyafipws added an endpoint to us
 
 forked
 
-[![Build and Push Docker Image](https://github.com/ETEREA-services/ETEREA.pyafipws-service/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/ETEREA-services/ETEREA.pyafipws-service/actions/workflows/deploy.yml)
+[![Build and Push Docker Image](https://github.com/ETEREA-services/ETEREA.pyafipws-tsa-service/actions/workflows/deploy.yml/badge.svg)](https://github.com/ETEREA-services/ETEREA.pyafipws-tsa-service/actions/workflows/deploy.yml)
