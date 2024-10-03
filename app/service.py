@@ -41,6 +41,7 @@ def facturador():
         if json_data is None:
             return jsonify({"error": "No se proporcionó un JSON válido"}), 400
 
+        logger.info("llamando a facturar ...")
         json_data = facturar(json_data, production=production)
 
         logger.info(f"json_data (after)={json_data}")
