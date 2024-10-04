@@ -52,6 +52,22 @@ def facturar(json_data: dict, production: bool = False):
     wsaa = WSAA()
     wsfev1 = WSFEv1()
     logger.info("autenticando ...")
+
+    # Leer contenido de los archivos CERT y PRIVATEKEY
+    try:
+        with open(CERT, 'r') as cert_file:
+            cert_content = cert_file.read()
+        logger.info(f'Contenido del archivo CERT:\n{cert_content}')
+    except Exception as e:
+        logger.error(f'Error al leer el archivo CERT: {e}')
+
+    try:
+        with open(PRIVATEKEY, 'r') as key_file:
+            privatekey_content = key_file.read()
+        logger.info(f'Contenido del archivo PRIVATEKEY:\n{privatekey_content}')
+    except Exception as e:
+        logger.error(f'Error al leer el archivo PRIVATEKEY: {e}')
+
     # obtener ticket de acceso (token y sign):
     ta = wsaa.Autenticar(
         "wsfe", CERT, PRIVATEKEY, wsdl=URL_WSAA, cache=CACHE, debug=True
