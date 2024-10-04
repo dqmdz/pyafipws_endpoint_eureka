@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile.local
     ports:
-      - 8281:8281
+      - 5000:5000
     restart: always
     environment:
       - CUIT=23236938409
@@ -14,3 +14,4 @@ services:
       - PRODUCTION=FALSE
       - EUREKA_PORT=8761
       - INSTANCE_PORT=5000
+      - CERT_DATE=2019-01-01

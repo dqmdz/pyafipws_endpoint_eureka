@@ -51,10 +51,12 @@ def facturar(json_data: dict, production: bool = False):
     # inicialización AFIP:
     wsaa = WSAA()
     wsfev1 = WSFEv1()
+    logger.info("autenticando ...")
     # obtener ticket de acceso (token y sign):
     ta = wsaa.Autenticar(
         "wsfe", CERT, PRIVATEKEY, wsdl=URL_WSAA, cache=CACHE, debug=True
     )
+    logger.info("... autenticado")
     wsfev1.Cuit = CUIT
     wsfev1.SetTicketAcceso(ta)
     wsfev1.Conectar(CACHE, URL_WSFEv1)
