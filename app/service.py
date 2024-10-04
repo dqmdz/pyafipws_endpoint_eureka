@@ -12,10 +12,12 @@ load_dotenv()
 production = True if os.getenv('PRODUCTION') == "TRUE" else False
 eureka_port = int(os.getenv('EUREKA_PORT', 8761))
 instance_port = int(os.getenv('INSTANCE_PORT', 5000))
+cert_date = os.getenv('CERT_DATE', '2019-01-01')
 
 logger.info(f'production={production}/{os.getenv("PRODUCTION")}')
 logger.info(f'eureka_port={eureka_port}/{os.getenv("EUREKA_PORT")}')
 logger.info(f'instance_port={instance_port}/{os.getenv("INSTANCE_PORT")}')
+logger.info(f'cert_date={cert_date}/{os.getenv("CERT_DATE")}')
 
 app = Flask(__name__)
 
