@@ -19,6 +19,26 @@ logger.info(f'eureka_port={eureka_port}/{os.getenv("EUREKA_PORT")}')
 logger.info(f'instance_port={instance_port}/{os.getenv("INSTANCE_PORT")}')
 logger.info(f'cert_date={cert_date}/{os.getenv("CERT_DATE")}')
 
+CERT = os.getenv("CERT")
+logger.info(f'cert={CERT}')
+PRIVATEKEY = os.getenv("PRIVATEKEY")
+logger.info(f'privatekey={PRIVATEKEY}')
+
+# Leer contenido de los archivos CERT y PRIVATEKEY
+try:
+    with open(CERT, 'r') as cert_file:
+        cert_content = cert_file.read()
+    logger.info(f'Contenido del archivo CERT:\n{cert_content}')
+except Exception as e:
+    logger.error(f'Error al leer el archivo CERT: {e}')
+
+try:
+    with open(PRIVATEKEY, 'r') as key_file:
+        privatekey_content = key_file.read()
+    logger.info(f'Contenido del archivo PRIVATEKEY:\n{privatekey_content}')
+except Exception as e:
+    logger.error(f'Error al leer el archivo PRIVATEKEY: {e}')
+
 app = Flask(__name__)
 
 eureka_client.init(eureka_server=f'http://eureka-service:{eureka_port}',
@@ -51,6 +71,7 @@ def facturador():
         return jsonify(json_data)
 
     except Exception as e:
+        logger.info(f'Error al facturar: {str(e)}')
         return jsonify({"error": str(e)}), 500
 
 
