@@ -24,6 +24,8 @@ import os
 import datetime
 import warnings
 from dotenv import load_dotenv
+from typing import Dict, Any, Optional, List
+from decimal import Decimal
 
 load_dotenv()
 
@@ -40,122 +42,162 @@ logger.info(f'privatekey={PRIVATEKEY}')
 CACHE = "cache"
 
 
-def facturar(json_data: dict, production: bool = False):
-    """Rutina para emitir facturas electrónicas en PDF c/CAE AFIP Argentina"""
+def facturar(json_data: Dict[str, Any], production: bool = False) -> Dict[str, Any]:
+    """
+    Emite facturas electrónicas con CAE AFIP Argentina
+    
+    Args:
+        json_data: Datos de la factura
+        production: Si es True usa ambiente de producción, sino homologación
+        
+    Returns:
+        Dict con los datos de la factura autorizada
+    
+    Raises:
+        ValueError: Si faltan datos requeridos
+        RuntimeError: Si hay error en la comunicación con AFIP
+    """
+    logger.debug(f"Iniciando facturación con datos: {json_data}")
 
-    URL_WSAA = URL_WSAA_PROD if production else URL_WSAA_HOMO
-    logger.info(f'url_wsaa={URL_WSAA}')
-    URL_WSFEv1 = URL_WSFEv1_PROD if production else URL_WSFEv1_HOMO
-    logger.info(f'url_wsfev1={URL_WSFEv1}')
+    # Validar datos requeridos
+    required_fields = ['tipo_afip', 'punto_venta', 'tipo_documento', 'documento', 'total']
+    if not all(field in json_data for field in required_fields):
+        missing_fields = [field for field in required_fields if field not in json_data]
+        logger.error(f"Faltan campos requeridos: {missing_fields}")
+        raise ValueError(f"Faltan campos requeridos: {missing_fields}")
 
-    # inicialización AFIP:
-    wsaa = WSAA()
-    wsfev1 = WSFEv1()
-    logger.info("autenticando ...")
+    try:
+        URL_WSAA = URL_WSAA_PROD if production else URL_WSAA_HOMO
+        URL_WSFEv1 = URL_WSFEv1_PROD if production else URL_WSFEv1_HOMO
+        logger.info(f"Usando URLs - WSAA: {URL_WSAA}, WSFEv1: {URL_WSFEv1}")
+        
+        # inicialización AFIP:
+        wsaa = WSAA()
+        wsfev1 = WSFEv1()
+        logger.info("autenticando ...")
 
-    # obtener ticket de acceso (token y sign):
-    ta = wsaa.Autenticar(
-        "wsfe", CERT, PRIVATEKEY, wsdl=URL_WSAA, cache=CACHE, debug=True
-    )
-    logger.info("... autenticado")
-    wsfev1.Cuit = CUIT
-    wsfev1.SetTicketAcceso(ta)
-    wsfev1.Conectar(CACHE, URL_WSFEv1)
+        # obtener ticket de acceso (token y sign):
+        ta = wsaa.Autenticar(
+            "wsfe", CERT, PRIVATEKEY, wsdl=URL_WSAA, cache=CACHE, debug=True
+        )
+        logger.info("... autenticado")
+        wsfev1.Cuit = CUIT
+        wsfev1.SetTicketAcceso(ta)
+        wsfev1.Conectar(CACHE, URL_WSFEv1)
 
-    # recorrer los json_data a facturar, solicitar CAE y generar el PDF:
-    hoy = datetime.date.today().strftime("%Y%m%d")
-    logger.info("creando comprobante ...")
-    cbte = Comprobante(
-        tipo_cbte=json_data.get("tipo_afip"),
-        punto_vta=json_data.get("punto_venta"),
-        fecha_cbte=hoy,
-        cbte_nro=json_data.get("nro"),
-        tipo_doc=json_data.get("tipo_documento"),
-        nro_doc=json_data.get("documento"),
-        imp_total=json_data.get("total"),
-        imp_neto=round(json_data.get("neto", 0) + json_data.get("neto105", 0), 2),
-        imp_iva=round(json_data.get("iva", 0) + json_data.get("iva105", 0), 2),
-        asociado_tipo_afip=json_data.get("asociado_tipo_afip", None),
-        asociado_punto_venta=json_data.get("asociado_punto_venta", None),
-        asociado_numero_comprobante=json_data.get("asociado_numero_comprobante", None),
-        asociado_fecha_comprobante=json_data.get("asociado_fecha_comprobante", None),
-    )
-    neto = json_data.get("neto")
-    iva = json_data.get("iva")
-    neto105 = json_data.get("neto105")
-    iva105 = json_data.get("iva105")
-    if iva > 0:
-        logger.info("agregando iva 21 ...")
-        cbte.agregar_iva(5, neto, iva)
-    if iva105 > 0:
-        logger.info("agregando iva 10.5 ...")
-        cbte.agregar_iva(4, neto105, iva105)
-    if not cbte.encabezado["asociado_numero_comprobante"] is None:
-        cbte.agregar_asociado()
-    logger.info("autorizando comprobante ...")
-    ok = cbte.autorizar(wsfev1)
-    nro = cbte.encabezado["cbte_nro"]
-    logger.info(f"factura autorizada={nro} cae={cbte.encabezado['cae']}")
-    json_data["cae"] = cbte.encabezado["cae"]
-    json_data["vencimiento_cae"] = cbte.encabezado["fch_venc_cae"]
-    json_data["resultado"] = cbte.encabezado["resultado"]
-    json_data["numero_comprobante"] = cbte.encabezado["cbte_nro"]
-    return json_data
+        # recorrer los json_data a facturar, solicitar CAE y generar el PDF:
+        hoy = datetime.date.today().strftime("%Y%m%d")
+        logger.info("creando comprobante ...")
+        cbte = Comprobante(
+            tipo_cbte=json_data.get("tipo_afip"),
+            punto_vta=json_data.get("punto_venta"),
+            fecha_cbte=hoy,
+            cbte_nro=json_data.get("nro"),
+            tipo_doc=json_data.get("tipo_documento"),
+            nro_doc=json_data.get("documento"),
+            imp_total=json_data.get("total"),
+            imp_neto=round(json_data.get("neto", 0) + json_data.get("neto105", 0), 2),
+            imp_iva=round(json_data.get("iva", 0) + json_data.get("iva105", 0), 2),
+            asociado_tipo_afip=json_data.get("asociado_tipo_afip", None),
+            asociado_punto_venta=json_data.get("asociado_punto_venta", None),
+            asociado_numero_comprobante=json_data.get("asociado_numero_comprobante", None),
+            asociado_fecha_comprobante=json_data.get("asociado_fecha_comprobante", None),
+        )
+        neto = json_data.get("neto")
+        iva = json_data.get("iva")
+        neto105 = json_data.get("neto105")
+        iva105 = json_data.get("iva105")
+        if iva > 0:
+            logger.info("agregando iva 21 ...")
+            cbte.agregar_iva(5, neto, iva)
+        if iva105 > 0:
+            logger.info("agregando iva 10.5 ...")
+            cbte.agregar_iva(4, neto105, iva105)
+        if not cbte.encabezado["asociado_numero_comprobante"] is None:
+            cbte.agregar_asociado()
+        logger.info("autorizando comprobante ...")
+        ok = cbte.autorizar(wsfev1)
+        nro = cbte.encabezado["cbte_nro"]
+        logger.info(f"factura autorizada={nro} cae={cbte.encabezado['cae']}")
+        json_data["cae"] = cbte.encabezado["cae"]
+        json_data["vencimiento_cae"] = cbte.encabezado["fch_venc_cae"]
+        json_data["resultado"] = cbte.encabezado["resultado"]
+        json_data["numero_comprobante"] = cbte.encabezado["cbte_nro"]
+        return json_data
+
+    except Exception as e:
+        logger.exception("Error inesperado durante la facturación")
+        raise
 
 
 class Comprobante:
-    def __init__(self, **kwargs):
-        self.encabezado = dict(
-            tipo_doc=99,
-            nro_doc=0,
-            tipo_cbte=0,
-            cbte_nro=None,
-            punto_vta=0,
-            fecha_cbte=None,
-            imp_total=0.00,
-            imp_tot_conc=0.00,
-            imp_neto=0.00,
-            imp_trib=0.00,
-            imp_op_ex=0.00,
-            imp_iva=0.00,
-            moneda_id="PES",
-            moneda_ctz=1.000,
-            obs="",
-            concepto=1,
-            fecha_serv_desde=None,
-            fecha_serv_hasta=None,
-            fecha_venc_pago=None,
-            nombre_cliente="",
-            domicilio_cliente="",
-            localidad="",
-            provincia="",
-            pais_dst_cmp=0,
-            id_impositivo="",
-            forma_pago="",
-            obs_generales="",
-            obs_comerciales="",
-            motivo_obs="",
-            cae="",
-            resultado="",
-            fch_venc_cae="",
-            asociado_tipo_afip=None,
-            asociado_punto_venta=None,
-            asociado_numero_comprobante=None,
-            asociado_fecha_comprobante=None,
-        )
+    def __init__(self, **kwargs: Any) -> None:
+        logger.debug(f"Inicializando comprobante con kwargs: {kwargs}")
+        self.encabezado: Dict[str, Any] = {
+            "tipo_doc": 99,
+            "nro_doc": 0,
+            "tipo_cbte": 0,
+            "cbte_nro": None,
+            "punto_vta": 0,
+            "fecha_cbte": None,
+            "imp_total": 0.00,
+            "imp_tot_conc": 0.00,
+            "imp_neto": 0.00,
+            "imp_trib": 0.00,
+            "imp_op_ex": 0.00,
+            "imp_iva": 0.00,
+            "moneda_id": "PES",
+            "moneda_ctz": 1.000,
+            "obs": "",
+            "concepto": 1,
+            "fecha_serv_desde": None,
+            "fecha_serv_hasta": None,
+            "fecha_venc_pago": None,
+            "nombre_cliente": "",
+            "domicilio_cliente": "",
+            "localidad": "",
+            "provincia": "",
+            "pais_dst_cmp": 0,
+            "id_impositivo": "",
+            "forma_pago": "",
+            "obs_generales": "",
+            "obs_comerciales": "",
+            "motivo_obs": "",
+            "cae": "",
+            "resultado": "",
+            "fch_venc_cae": "",
+            "asociado_tipo_afip": None,
+            "asociado_punto_venta": None,
+            "asociado_numero_comprobante": None,
+            "asociado_fecha_comprobante": None,
+        }
         self.encabezado.update(kwargs)
         if self.encabezado["fecha_serv_desde"] or self.encabezado["fecha_serv_hasta"]:
             self.encabezado["concepto"] = 3  # servicios
-        self.cmp_asocs = []
-        self.ivas = {}
+        self.cmp_asocs: List[Dict[str, Any]] = []
+        self.ivas: Dict[int, Dict[str, Any]] = {}
+        
+        # Validar valores críticos
+        self._validate_encabezado()
+        
+    def _validate_encabezado(self) -> None:
+        """Valida los datos críticos del encabezado"""
+        if self.encabezado['imp_total'] <= 0:
+            raise ValueError("El importe total debe ser mayor a 0")
 
-    def agregar_iva(self, iva_id, base_imp, importe):
-        iva = self.ivas.setdefault(
-            iva_id, dict(iva_id=iva_id, base_imp=0.0, importe=0.0)
-        )
-        iva["base_imp"] += base_imp
-        iva["importe"] += importe
-        logger.info(self.ivas)
+    def agregar_iva(self, iva_id: int, base_imp: Decimal, importe: Decimal) -> None:
+        logger.debug(f"Agregando IVA - ID: {iva_id}, Base: {base_imp}, Importe: {importe}")
+        try:
+            iva = self.ivas.setdefault(
+                iva_id,
+                {'iva_id': iva_id, 'base_imp': Decimal('0'), 'importe': Decimal('0')}
+            )
+            iva['base_imp'] += base_imp
+            iva['importe'] += importe
+            logger.info(f"IVA agregado exitosamente. Estado actual: {self.ivas}")
+        except Exception as e:
+            logger.error(f"Error al agregar IVA: {str(e)}")
+            raise
 
     def agregar_asociado(self):
         self.cmp_asocs.append(
@@ -169,50 +211,58 @@ class Comprobante:
         )
 
     def autorizar(self, wsfev1):
+        logger.info("Iniciando proceso de autorización")
+        try:
+            # datos generales del comprobante:
+            if not self.encabezado["cbte_nro"]:
+                # si no se especifíca nro de comprobante, autonumerar:
+                ult = wsfev1.CompUltimoAutorizado(
+                    self.encabezado["tipo_cbte"], 
+                    self.encabezado["punto_vta"]
+                )
+                self.encabezado["cbte_nro"] = int(ult) + 1
+                logger.info(f"Número de comprobante asignado: {self.encabezado['cbte_nro']}")
 
-        # datos generales del comprobante:
-        logger.info("buscando número ...")
-        if not self.encabezado["cbte_nro"]:
-            # si no se especifíca nro de comprobante, autonumerar:
-            ult = wsfev1.CompUltimoAutorizado(
-                self.encabezado["tipo_cbte"], self.encabezado["punto_vta"]
-            )
-            self.encabezado["cbte_nro"] = int(ult) + 1
+            self.encabezado["cbt_desde"] = self.encabezado["cbte_nro"]
+            self.encabezado["cbt_hasta"] = self.encabezado["cbte_nro"]
+            logger.info("creando factura ...")
+            wsfev1.CrearFactura(**self.encabezado)
 
-        self.encabezado["cbt_desde"] = self.encabezado["cbte_nro"]
-        self.encabezado["cbt_hasta"] = self.encabezado["cbte_nro"]
-        logger.info("creando factura ...")
-        wsfev1.CrearFactura(**self.encabezado)
+            # agrego un comprobante asociado (solo notas de crédito / débito)
+            logger.info("agregando asociados ...")
+            for cmp_asoc in self.cmp_asocs:
+                wsfev1.AgregarCmpAsoc(**cmp_asoc)
 
-        # agrego un comprobante asociado (solo notas de crédito / débito)
-        logger.info("agregando asociados ...")
-        for cmp_asoc in self.cmp_asocs:
-            wsfev1.AgregarCmpAsoc(**cmp_asoc)
+            # agrego el subtotal por tasa de IVA (iva_id 5: 21%):
+            logger.info("agregandos ivas ...")
+            for iva in self.ivas.values():
+                wsfev1.AgregarIva(**iva)
 
-        # agrego el subtotal por tasa de IVA (iva_id 5: 21%):
-        logger.info("agregandos ivas ...")
-        for iva in self.ivas.values():
-            wsfev1.AgregarIva(**iva)
+            # llamo al websevice para obtener el CAE:
+            logger.info("solicitando ...")
+            wsfev1.CAESolicitar()
 
-        # llamo al websevice para obtener el CAE:
-        logger.info("solicitando ...")
-        wsfev1.CAESolicitar()
+            if wsfev1.ErrMsg:
+                logger.error(f"Error de AFIP: {wsfev1.ErrMsg}")
+                raise RuntimeError(wsfev1.ErrMsg)
 
-        if wsfev1.ErrMsg:
-            logger.info(wsfev1.ErrMsg)
-            raise RuntimeError(wsfev1.ErrMsg)
+            if wsfev1.Observaciones:
+                logger.warning(f"Observaciones de AFIP: {wsfev1.Observaciones}")
 
-        for obs in wsfev1.Observaciones:
-            warnings.warn(obs)
+            assert wsfev1.Resultado == "A"  # Aprobado!
+            assert wsfev1.CAE
+            assert wsfev1.Vencimiento
 
-        assert wsfev1.Resultado == "A"  # Aprobado!
-        assert wsfev1.CAE
-        assert wsfev1.Vencimiento
-
-        self.encabezado["resultado"] = wsfev1.Resultado
-        self.encabezado["cae"] = wsfev1.CAE
-        self.encabezado["fch_venc_cae"] = wsfev1.Vencimiento
-        return True
+            self.encabezado["resultado"] = wsfev1.Resultado
+            self.encabezado["cae"] = wsfev1.CAE
+            self.encabezado["fch_venc_cae"] = wsfev1.Vencimiento
+            
+            logger.info(f"Autorización exitosa - CAE: {wsfev1.CAE}, Vencimiento: {wsfev1.Vencimiento}")
+            return True
+            
+        except Exception as e:
+            logger.exception("Error durante la autorización del comprobante")
+            raise
 
 
 if __name__ == "__main__":
