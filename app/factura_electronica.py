@@ -186,8 +186,12 @@ class Comprobante:
             raise ValueError("El importe total debe ser mayor a 0")
 
     def agregar_iva(self, iva_id: int, base_imp: Decimal, importe: Decimal) -> None:
-        logger.debug(f"Agregando IVA - ID: {iva_id}, Base: {base_imp}, Importe: {importe}")
+        logger.info(f"Agregando IVA - ID: {iva_id}, Base: {base_imp}, Importe: {importe}")
         try:
+            # Asegurarse que los valores sean Decimal
+            base_imp = Decimal(str(base_imp)) if not isinstance(base_imp, Decimal) else base_imp
+            importe = Decimal(str(importe)) if not isinstance(importe, Decimal) else importe
+            
             iva = self.ivas.setdefault(
                 iva_id,
                 {'iva_id': iva_id, 'base_imp': Decimal('0'), 'importe': Decimal('0')}
