@@ -91,14 +91,6 @@ def facturar(json_data: Dict[str, Any], production: bool = False) -> Dict[str, A
             logger.error(f"Error en autenticación: {str(auth_error)}")
             raise
 
-        # Verificar estado de conexión
-        try:
-            wsfev1.Dummy()
-            logger.info(f"Estado de servidores - AppServer: {wsfev1.AppServerStatus}, DbServer: {wsfev1.DbServerStatus}, AuthServer: {wsfev1.AuthServerStatus}")
-        except Exception as dummy_error:
-            logger.error(f"Error en verificación de conexión: {str(dummy_error)}")
-            raise
-
         wsfev1.Cuit = CUIT
         wsfev1.SetTicketAcceso(ta)
         wsfev1.Conectar(CACHE, URL_WSFEv1)
