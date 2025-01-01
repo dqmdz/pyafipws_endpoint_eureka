@@ -26,6 +26,11 @@ import warnings
 from dotenv import load_dotenv
 from typing import Dict, Any, Optional, List
 from decimal import Decimal
+import http.client as http_client
+import logging
+
+http_client.HTTPConnection.debuglevel = 1
+logging.getLogger('urllib3').setLevel(logging.DEBUG)
 
 load_dotenv()
 
@@ -76,11 +81,16 @@ def facturar(json_data: Dict[str, Any], production: bool = False) -> Dict[str, A
         wsfev1 = WSFEv1()
         logger.info("autenticando ...")
 
-        # obtener ticket de acceso (token y sign):
-        ta = wsaa.Autenticar(
-            "wsfe", CERT, PRIVATEKEY, wsdl=URL_WSAA, cache=CACHE, debug=True
-        )
-        logger.info("... autenticado")
+        # Agregar más logging para debug
+        try:
+            ta = wsaa.Autenticar(
+                "wsfe", CERT, PRIVATEKEY, wsdl=URL_WSAA, cache=CACHE, debug=True
+            )
+            logger.info(f"Token de acceso obtenido: {ta}")
+        except Exception as auth_error:
+            logger.error(f"Error en autenticación: {str(auth_error)}")
+            raise
+
         wsfev1.Cuit = CUIT
         wsfev1.SetTicketAcceso(ta)
         wsfev1.Conectar(CACHE, URL_WSFEv1)
