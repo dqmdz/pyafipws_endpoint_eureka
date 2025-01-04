@@ -44,7 +44,8 @@ CERT = os.getenv("CERT")
 logger.info(f'cert={CERT}')
 PRIVATEKEY = os.getenv("PRIVATEKEY")
 logger.info(f'privatekey={PRIVATEKEY}')
-CACHE = "cache"
+CACHE = ""
+# CACHE = "cache"
 
 
 def facturar(json_data: Dict[str, Any], production: bool = False) -> Dict[str, Any]:
@@ -91,9 +92,13 @@ def facturar(json_data: Dict[str, Any], production: bool = False) -> Dict[str, A
             logger.error(f"Error en autenticación: {str(auth_error)}")
             raise
 
+        logger.info("asignando cuit ... ")
         wsfev1.Cuit = CUIT
+        logger.info("asignando ticket de acceso ...")
         wsfev1.SetTicketAcceso(ta)
+        logger.info("conectando ...")
         wsfev1.Conectar(CACHE, URL_WSFEv1)
+        logger.info("... conectado")
 
         # recorrer los json_data a facturar, solicitar CAE y generar el PDF:
         hoy = datetime.date.today().strftime("%Y%m%d")
