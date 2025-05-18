@@ -66,7 +66,12 @@ def facturar(json_data: Dict[str, Any], production: bool = False) -> Dict[str, A
     logger.debug(f"Iniciando facturación con datos: {json_data}")
 
     # Validar datos requeridos
-    required_fields = ['tipo_afip', 'punto_venta', 'tipo_documento', 'documento', 'total']
+    required_fields = ['tipo_afip', 
+                       'punto_venta', 
+                       'tipo_documento', 
+                       'documento', 
+                       'total',
+                       'id_condicion_iva']
     if not all(field in json_data for field in required_fields):
         missing_fields = [field for field in required_fields if field not in json_data]
         logger.error(f"Faltan campos requeridos: {missing_fields}")
@@ -117,6 +122,7 @@ def facturar(json_data: Dict[str, Any], production: bool = False) -> Dict[str, A
             asociado_punto_venta=json_data.get("asociado_punto_venta", None),
             asociado_numero_comprobante=json_data.get("asociado_numero_comprobante", None),
             asociado_fecha_comprobante=json_data.get("asociado_fecha_comprobante", None),
+            condicion_iva_receptor_id=json_data.get("id_condicion_iva", None),
         )
         neto = json_data.get("neto")
         iva = json_data.get("iva")
@@ -185,6 +191,7 @@ class Comprobante:
             "asociado_punto_venta": None,
             "asociado_numero_comprobante": None,
             "asociado_fecha_comprobante": None,
+            "condicion_iva_receptor_id": 5,
         }
         self.encabezado.update(kwargs)
         if self.encabezado["fecha_serv_desde"] or self.encabezado["fecha_serv_hasta"]:
