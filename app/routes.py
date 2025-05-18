@@ -1,3 +1,4 @@
+import json
 from flask import Blueprint, jsonify, request, Response
 from app.logger_setup import logger
 from app.factura_electronica import facturar
@@ -25,7 +26,7 @@ def register_routes(config: Dict) -> Blueprint:
             if json_data is None:
                 return jsonify({"error": "No se proporcionó un JSON válido"}), 400
             
-            logger.info(f"json_data={json_data}")
+            logger.info(f"json_data=\n{json.dumps(json_data, indent=2)}")
             logger.info("llamando a facturar ...")
             
             result = facturar(json_data, production=config['production'])
