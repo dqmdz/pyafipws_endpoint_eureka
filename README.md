@@ -1,11 +1,6 @@
 # pyafipws_endpoint_eureka
 
 [![Build and Push Docker Image](https://github.com/dqmdz/pyafipws_endpoint_eureka/actions/workflows/deploy.yml/badge.svg)](https://github.com/dqmdz/pyafipws_endpoint_eureka/actions/workflows/deploy.yml)
-
-forked
-
-[![Build and Push Docker Image](https://github.com/ETEREA-services/ETEREA.pyafipws-sh-service/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/ETEREA-services/ETEREA.pyafipws-sh-service/actions/workflows/deploy.yml)
-
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
 [![Flask](https://img.shields.io/badge/flask-3.0.1-green.svg)](https://flask.palletsprojects.com/)
 [![MySQL](https://img.shields.io/badge/mysql-5.7-orange.svg)](https://www.mysql.com/)
