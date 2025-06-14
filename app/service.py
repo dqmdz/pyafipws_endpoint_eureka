@@ -5,6 +5,7 @@ from pathlib import Path
 import py_eureka_client.eureka_client as eureka_client
 from dotenv import load_dotenv
 from flask import Flask
+from flask_restx import Api
 
 from app.logger_setup import logger
 from app.routes import register_routes
@@ -43,10 +44,11 @@ def read_file_content(file_path: str, file_type: str) -> str:
         logger.error(f'Error al leer el archivo {file_type}: {e}')
         raise RuntimeError(f'Error al leer el archivo {file_type}') from e
 
-def create_app() -> Flask:
+def create_app(config: Dict[str, Any] = None) -> Flask:
     """Crea y configura la aplicación Flask."""
     app = Flask(__name__)
-    config = load_config()
+    if config is None:
+        config = load_config()
     
     # Leer archivos de certificados
     read_file_content(config['cert_path'], 'CERT')
@@ -59,14 +61,24 @@ def create_app() -> Flask:
         instance_port=config['instance_port']
     )
     
-    # Registrar blueprint
-    afipws_blueprint = register_routes(config)
-    app.register_blueprint(afipws_blueprint)
+    # Configurar Flask-RESTX con Swagger
+    api = Api(
+        app,
+        version='1.0',
+        title='pyafipws API',
+        description='API REST para emisión de comprobantes electrónicos AFIP',
+        doc='/swagger/',
+        prefix='/api'
+    )
+    
+    # Registrar rutas con la API
+    register_routes(config, api)
     
     return app
 
 # Creación de la aplicación
-app = create_app()
+config = load_config()
+app = create_app(config)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=config['instance_port'])
