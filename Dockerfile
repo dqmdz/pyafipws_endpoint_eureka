@@ -32,7 +32,8 @@ COPY user.key user.key
 
 ENV FLASK_APP=app.service
 ENV FLASK_RUN_HOST=0.0.0.0
+ENV FLASK_RUN_PORT=${INSTANCE_PORT:-5000}
 ENV FLASK_DEBUG=1
 ENV FLASK_ENV=development
 
-CMD ["flask", "run", "--host=0.0.0.0", "--debug"]
+CMD ["sh", "-c", "flask run --host=0.0.0.0 --port=${INSTANCE_PORT:-5000} --debug"]

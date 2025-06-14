@@ -2,18 +2,19 @@
 
 [![Build and Push Docker Image](https://github.com/dqmdz/pyafipws_endpoint_eureka/actions/workflows/deploy.yml/badge.svg)](https://github.com/dqmdz/pyafipws_endpoint_eureka/actions/workflows/deploy.yml)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
-[![Flask](https://img.shields.io/badge/flask-3.0.1-green.svg)](https://flask.palletsprojects.com/)
-[![MySQL](https://img.shields.io/badge/mysql-5.7-orange.svg)](https://www.mysql.com/)
+[![Flask 3.0.1](https://img.shields.io/badge/flask-3.0.1-green.svg)](https://flask.palletsprojects.com/)
+[![pyafipws v2025.05.05](https://img.shields.io/badge/pyafipws-v2025.05.05-orange.svg)](https://github.com/dqmdz/pyafipws)
 [![Docker](https://img.shields.io/badge/docker-latest-blue.svg)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/license-GPL%203.0-yellow.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-Servicio REST basado en [pyafipws](https://github.com/reingart/pyafipws) para la emisión de comprobantes electrónicos AFIP (Argentina) con integración a Eureka Service Discovery.
+Servicio REST basado en [pyafipws v2025.05.05](https://github.com/dqmdz/pyafipws) para la emisión de comprobantes electrónicos AFIP (Argentina) con integración a Eureka Service Discovery.
 
 ## Características
 
 - Emisión de comprobantes electrónicos AFIP (Facturas, Notas de Crédito/Débito)
 - Integración con Eureka Service Discovery
-- API REST con Flask
+- API REST con Flask 3.0.1
+- **Documentación automática con Swagger/OpenAPI**
 - Contenedorización con Docker
 - Soporte para ambiente de homologación y producción
 - Logging mejorado y manejo de errores
@@ -39,7 +40,7 @@ Servicio REST basado en [pyafipws](https://github.com/reingart/pyafipws) para la
    - `PRIVATEKEY`: Ruta a la clave privada (default: user.key)
    - `PRODUCTION`: TRUE/FALSE para ambiente de producción
    - `EUREKA_PORT`: Puerto de Eureka (default: 8761)
-   - `INSTANCE_PORT`: Puerto del servicio (default: 5000)
+   - `INSTANCE_PORT`: Puerto del servicio (default: 5086)
    - `CERT_DATE`: Fecha del certificado (default: 2019-01-01)
 
 ## Uso
@@ -55,6 +56,24 @@ docker-compose -f docker-compose.yml.example up
 ```bash
 docker-compose up -d
 ```
+
+## Documentación de la API
+
+### Swagger UI
+
+Una vez que el servicio esté ejecutándose, puedes acceder a la documentación interactiva de la API en:
+
+```
+http://localhost:5086/swagger/
+```
+
+La documentación Swagger incluye:
+- Descripción completa de todos los endpoints
+- Modelos de datos con ejemplos
+- Interfaz interactiva para probar los endpoints
+- Códigos de respuesta y manejo de errores
+
+📖 **Guía completa de Swagger**: [docs/SWAGGER_GUIDE.md](docs/SWAGGER_GUIDE.md)
 
 ## API Endpoints
 
@@ -83,6 +102,32 @@ Emite un comprobante electrónico.
 ### GET /api/afipws/test
 
 Endpoint de prueba para verificar el estado del servicio.
+
+## Ejemplo de uso con curl
+
+```bash
+# Probar el endpoint de test
+curl -X GET "http://localhost:5086/api/afipws/test"
+
+# Emitir una factura
+curl -X POST "http://localhost:5086/api/afipws/facturador" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tipo_afip": 1,
+    "punto_venta": 1,
+    "tipo_documento": 80,
+    "documento": "20123456789",
+    "total": 1210.0,
+    "id_condicion_iva": 1,
+    "neto": 1000.0,
+    "iva": 210.0
+  }'
+```
+
+## Ejemplos y Documentación
+
+- 📚 [Guía de Swagger](docs/SWAGGER_GUIDE.md) - Documentación completa de la API
+- 🚀 [Ejemplo de uso](examples/api_usage.py) - Script de ejemplo para probar la API
 
 ## Licencia
 

@@ -144,6 +144,11 @@ def facturar(json_data: Dict[str, Any], production: bool = False) -> Dict[str, A
         json_data["vencimiento_cae"] = cbte.encabezado["fch_venc_cae"]
         json_data["resultado"] = cbte.encabezado["resultado"]
         json_data["numero_comprobante"] = cbte.encabezado["cbte_nro"]
+        
+        # Logging detallado para debug
+        logger.info(f"Resultado final antes de devolver: {json_data}")
+        logger.info(f"Tipos de datos: tipo_documento={type(json_data.get('tipo_documento'))}, documento={type(json_data.get('documento'))}, total={type(json_data.get('total'))}")
+        
         return json_data
 
     except Exception as e:

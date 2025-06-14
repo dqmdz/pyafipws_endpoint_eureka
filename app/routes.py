@@ -1,41 +1,113 @@
 import json
-from flask import Blueprint, jsonify, request, Response
+from flask import request
+from flask_restx import Namespace, Resource, fields
 from app.logger_setup import logger
 from app.factura_electronica import facturar
 from typing import Dict
 
-# Crear el blueprint con el prefijo base
-afipws_bp = Blueprint('afipws', __name__, url_prefix='/api/afipws')
+# Crear namespace para Flask-RESTX
+afipws_ns = Namespace('afipws', description='Operaciones de facturación AFIP')
 
-def register_routes(config: Dict) -> Blueprint:
-    """Configura y retorna el blueprint con todas las rutas."""
-    
-    @afipws_bp.route('/test', methods=['GET'])
-    def test() -> Response:
-        """Endpoint de prueba."""
+# Variable global para almacenar la configuración
+_afip_config = {}
+
+# Modelos para Swagger
+factura_model = afipws_ns.model('Factura', {
+    'tipo_afip': fields.Integer(required=True, description='Tipo de comprobante AFIP', example=1),
+    'punto_venta': fields.Integer(required=True, description='Punto de venta', example=1),
+    'tipo_documento': fields.Integer(required=True, description='Tipo de documento del receptor', example=80),
+    'documento': fields.String(required=True, description='Número de documento del receptor', example='20123456789'),
+    'total': fields.Float(required=True, description='Importe total', example=1210.0),
+    'id_condicion_iva': fields.Integer(required=True, description='ID de condición IVA del receptor', example=1),
+    'neto': fields.Float(description='Importe neto gravado', example=1000.0),
+    'iva': fields.Float(description='Importe IVA 21%', example=210.0),
+    'neto105': fields.Float(description='Importe neto gravado 10.5%', example=0.0),
+    'iva105': fields.Float(description='Importe IVA 10.5%', example=0.0),
+    'asociado_tipo_afip': fields.Integer(description='Tipo de comprobante asociado'),
+    'asociado_punto_venta': fields.Integer(description='Punto de venta del comprobante asociado'),
+    'asociado_numero_comprobante': fields.Integer(description='Número de comprobante asociado'),
+    'asociado_fecha_comprobante': fields.String(description='Fecha del comprobante asociado')
+})
+
+response_model = afipws_ns.model('Response', {
+    'success': fields.Boolean(description='Indica si la operación fue exitosa'),
+    'data': fields.Raw(description='Datos de respuesta'),
+    'error': fields.String(description='Mensaje de error si aplica')
+})
+
+factura_response_model = afipws_ns.model('FacturaResponse', {
+    'tipo_documento': fields.Integer(description='Tipo de documento del receptor'),
+    'documento': fields.String(description='Número de documento del receptor'),
+    'tipo_afip': fields.Integer(description='Tipo de comprobante AFIP'),
+    'punto_venta': fields.Integer(description='Punto de venta'),
+    'total': fields.Float(description='Importe total'),
+    'exento': fields.Float(description='Importe exento'),
+    'neto': fields.Float(description='Importe neto gravado'),
+    'neto105': fields.Float(description='Importe neto gravado 10.5%'),
+    'iva': fields.Float(description='Importe IVA 21%'),
+    'iva105': fields.Float(description='Importe IVA 10.5%'),
+    'resultado': fields.String(description='Resultado de la autorización'),
+    'cae': fields.String(description='Número de CAE'),
+    'vencimiento_cae': fields.String(description='Fecha de vencimiento del CAE'),
+    'numero_comprobante': fields.Integer(description='Número de comprobante'),
+    'asociado_tipo_afip': fields.Integer(description='Tipo de comprobante asociado'),
+    'asociado_punto_venta': fields.Integer(description='Punto de venta del comprobante asociado'),
+    'asociado_numero_comprobante': fields.Integer(description='Número de comprobante asociado'),
+    'asociado_fecha_comprobante': fields.String(description='Fecha del comprobante asociado'),
+    'id_condicion_iva': fields.Integer(description='ID de condición IVA del receptor')
+})
+
+test_response_model = afipws_ns.model('TestResponse', {
+    'test': fields.String(description='Mensaje de prueba', example='ok')
+})
+
+@afipws_ns.route('/test')
+class TestResource(Resource):
+    @afipws_ns.doc('test_endpoint')
+    @afipws_ns.marshal_with(test_response_model)
+    def get(self):
+        """Endpoint de prueba para verificar el estado del servicio."""
         logger.info("test")
-        return jsonify({"test": "ok"})
+        return {"test": "ok"}
 
-    @afipws_bp.route('/facturador', methods=['POST'])
-    def facturador() -> Response:
-        """Endpoint para procesar facturas."""
+@afipws_ns.route('/facturador')
+class FacturadorResource(Resource):
+    @afipws_ns.doc('facturar')
+    @afipws_ns.expect(factura_model)
+    @afipws_ns.marshal_with(factura_response_model)
+    def post(self):
+        """Endpoint para procesar facturas electrónicas AFIP."""
         logger.info("facturando ...")
         try:
             json_data = request.get_json()
             
             if json_data is None:
-                return jsonify({"error": "No se proporcionó un JSON válido"}), 400
+                afipws_ns.abort(400, "No se proporcionó un JSON válido")
             
             logger.info(f"json_data=\n{json.dumps(json_data, indent=2)}")
             logger.info("llamando a facturar ...")
             
-            result = facturar(json_data, production=config['production'])
+            # Obtener la configuración desde la variable global
+            production = _afip_config.get('production', False)
+            
+            result = facturar(json_data, production=production)
             logger.info(f"json_data (after)={result}")
             
-            return jsonify(result)
+            # Logging detallado para debug
+            logger.info(f"Resultado final JSON: {json.dumps(result, indent=2)}")
+            logger.info(f"Tipos en resultado: {[(k, type(v)) for k, v in result.items()]}")
+            
+            return result
             
         except Exception as e:
             logger.error(f'Error al facturar: {str(e)}')
-            return jsonify({"error": str(e)}), 500
+            return {"success": False, "error": str(e)}, 500
+
+def register_routes(config: Dict, api):
+    """Configura y registra las rutas con la API de Flask-RESTX."""
+    # Guardar la configuración en la variable global
+    global _afip_config
+    _afip_config = config
     
-    return afipws_bp
+    # Agregar namespace a la API
+    api.add_namespace(afipws_ns)
