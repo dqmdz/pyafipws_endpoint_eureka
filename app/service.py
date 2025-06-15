@@ -9,6 +9,7 @@ from flask_restx import Api
 
 from app.logger_setup import logger
 from app.routes import register_routes
+from app.otel_setup import setup_otel, instrument_app
 
 # Constantes
 EUREKA_DEFAULT_PORT = 8761
@@ -53,6 +54,11 @@ def create_app(config: Dict[str, Any] = None) -> Flask:
     # Leer archivos de certificados
     read_file_content(config['cert_path'], 'CERT')
     read_file_content(config['privatekey_path'], 'PRIVATEKEY')
+    
+    # Configurar OpenTelemetry (opcional, solo si está configurado)
+    tracer = setup_otel()
+    if tracer:
+        instrument_app(app)
     
     # Configurar Eureka
     eureka_client.init(

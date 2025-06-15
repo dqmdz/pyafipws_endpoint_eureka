@@ -3,6 +3,7 @@ from flask import request
 from flask_restx import Namespace, Resource, fields
 from app.logger_setup import logger
 from app.factura_electronica import facturar
+from app.otel_setup import get_tracer
 from typing import Dict
 
 # Crear namespace para Flask-RESTX
@@ -67,8 +68,16 @@ class TestResource(Resource):
     @afipws_ns.marshal_with(test_response_model)
     def get(self):
         """Endpoint de prueba para verificar el estado del servicio."""
-        logger.info("test")
-        return {"test": "ok"}
+        tracer = get_tracer()
+        if tracer:
+            with tracer.start_as_current_span("test_endpoint") as span:
+                span.set_attribute("endpoint", "/test")
+                span.set_attribute("method", "GET")
+                logger.info("test")
+                return {"test": "ok"}
+        else:
+            logger.info("test")
+            return {"test": "ok"}
 
 @afipws_ns.route('/facturador')
 class FacturadorResource(Resource):
@@ -77,31 +86,81 @@ class FacturadorResource(Resource):
     @afipws_ns.marshal_with(factura_response_model)
     def post(self):
         """Endpoint para procesar facturas electrónicas AFIP."""
-        logger.info("facturando ...")
-        try:
-            json_data = request.get_json()
-            
-            if json_data is None:
-                afipws_ns.abort(400, "No se proporcionó un JSON válido")
-            
-            logger.info(f"json_data=\n{json.dumps(json_data, indent=2)}")
-            logger.info("llamando a facturar ...")
-            
-            # Obtener la configuración desde la variable global
-            production = _afip_config.get('production', False)
-            
-            result = facturar(json_data, production=production)
-            logger.info(f"json_data (after)={result}")
-            
-            # Logging detallado para debug
-            logger.info(f"Resultado final JSON: {json.dumps(result, indent=2)}")
-            logger.info(f"Tipos en resultado: {[(k, type(v)) for k, v in result.items()]}")
-            
-            return result
-            
-        except Exception as e:
-            logger.error(f'Error al facturar: {str(e)}')
-            return {"success": False, "error": str(e)}, 500
+        tracer = get_tracer()
+        
+        if tracer:
+            with tracer.start_as_current_span("facturar_endpoint") as span:
+                span.set_attribute("endpoint", "/facturador")
+                span.set_attribute("method", "POST")
+                
+                try:
+                    json_data = request.get_json()
+                    
+                    if json_data is None:
+                        span.set_attribute("error", "No se proporcionó un JSON válido")
+                        afipws_ns.abort(400, "No se proporcionó un JSON válido")
+                    
+                    # Agregar atributos del span con información de la factura
+                    span.set_attribute("factura.tipo_afip", json_data.get('tipo_afip', 0))
+                    span.set_attribute("factura.punto_venta", json_data.get('punto_venta', 0))
+                    span.set_attribute("factura.documento", json_data.get('documento', ''))
+                    span.set_attribute("factura.total", json_data.get('total', 0.0))
+                    
+                    logger.info("facturando ...")
+                    logger.info(f"json_data=\n{json.dumps(json_data, indent=2)}")
+                    logger.info("llamando a facturar ...")
+                    
+                    # Obtener la configuración desde la variable global
+                    production = _afip_config.get('production', False)
+                    
+                    with tracer.start_as_current_span("facturar_afip") as factura_span:
+                        factura_span.set_attribute("afip.production", production)
+                        result = facturar(json_data, production=production)
+                    
+                    logger.info(f"json_data (after)={result}")
+                    
+                    # Logging detallado para debug
+                    logger.info(f"Resultado final JSON: {json.dumps(result, indent=2)}")
+                    logger.info(f"Tipos en resultado: {[(k, type(v)) for k, v in result.items()]}")
+                    
+                    # Agregar atributos del resultado al span
+                    span.set_attribute("resultado.cae", result.get('cae', ''))
+                    span.set_attribute("resultado.numero_comprobante", result.get('numero_comprobante', 0))
+                    
+                    return result
+                    
+                except Exception as e:
+                    span.set_attribute("error", str(e))
+                    span.set_attribute("error.type", type(e).__name__)
+                    logger.error(f'Error al facturar: {str(e)}')
+                    return {"success": False, "error": str(e)}, 500
+        else:
+            # Código original sin trazas
+            try:
+                json_data = request.get_json()
+                
+                if json_data is None:
+                    afipws_ns.abort(400, "No se proporcionó un JSON válido")
+                
+                logger.info("facturando ...")
+                logger.info(f"json_data=\n{json.dumps(json_data, indent=2)}")
+                logger.info("llamando a facturar ...")
+                
+                # Obtener la configuración desde la variable global
+                production = _afip_config.get('production', False)
+                
+                result = facturar(json_data, production=production)
+                logger.info(f"json_data (after)={result}")
+                
+                # Logging detallado para debug
+                logger.info(f"Resultado final JSON: {json.dumps(result, indent=2)}")
+                logger.info(f"Tipos en resultado: {[(k, type(v)) for k, v in result.items()]}")
+                
+                return result
+                
+            except Exception as e:
+                logger.error(f'Error al facturar: {str(e)}')
+                return {"success": False, "error": str(e)}, 500
 
 def register_routes(config: Dict, api):
     """Configura y registra las rutas con la API de Flask-RESTX."""
