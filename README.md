@@ -15,6 +15,8 @@ Servicio REST basado en [pyafipws v2025.05.05](https://github.com/dqmdz/pyafipws
 - Integración con Eureka Service Discovery
 - API REST con Flask 3.0.1
 - **Documentación automática con Swagger/OpenAPI**
+- **Observabilidad con OpenTelemetry** (trazas, métricas y logs)
+- **Integración con Jaeger + Elasticsearch** para monitoreo distribuido
 - Contenedorización con Docker
 - Soporte para ambiente de homologación y producción
 - Logging mejorado y manejo de errores
@@ -27,6 +29,7 @@ Servicio REST basado en [pyafipws v2025.05.05](https://github.com/dqmdz/pyafipws
 - Docker y Docker Compose
 - Certificados AFIP válidos (`.crt` y `.key`)
 - CUIT válido para facturación
+- **Opcional**: Endpoint OpenTelemetry para observabilidad
 
 ## Configuración
 
@@ -42,6 +45,7 @@ Servicio REST basado en [pyafipws v2025.05.05](https://github.com/dqmdz/pyafipws
    - `EUREKA_PORT`: Puerto de Eureka (default: 8761)
    - `INSTANCE_PORT`: Puerto del servicio (default: 5086)
    - `CERT_DATE`: Fecha del certificado (default: 2019-01-01)
+   - **`OTEL_EXPORTER_OTLP_ENDPOINT`**: Endpoint OpenTelemetry para observabilidad (opcional)
 
 ## Uso
 
@@ -55,6 +59,26 @@ docker-compose -f docker-compose.yml.example up
 
 ```bash
 docker-compose up -d
+```
+
+## Observabilidad
+
+El servicio incluye integración completa con OpenTelemetry para observabilidad:
+
+### Trazas Distribuidas
+- Instrumentación automática de Flask, requests y logging
+- Trazas de todas las operaciones de facturación
+- Integración con Jaeger para visualización de trazas
+
+### Métricas y Logs
+- Logging estructurado con contexto de trazas
+- Métricas de rendimiento y errores
+- Exportación a Elasticsearch para análisis
+
+### Configuración
+Para habilitar la observabilidad, configurar la variable de entorno:
+```bash
+OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
 ```
 
 ## Documentación de la API

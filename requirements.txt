@@ -55,3 +55,10 @@ yarl==1.9.4
 dnspython==2.6.1
 ifaddr==0.2.0
 py_eureka_client==0.11.10
+# OpenTelemetry dependencies for observability
+opentelemetry-api==1.21.0
+opentelemetry-sdk==1.21.0
+opentelemetry-instrumentation-flask==0.42b0
+opentelemetry-instrumentation-requests==0.42b0
+opentelemetry-instrumentation-logging==0.42b0
+opentelemetry-exporter-otlp-proto-http==1.21.0

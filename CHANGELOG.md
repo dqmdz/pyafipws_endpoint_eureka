@@ -2,6 +2,30 @@
 
 Todos los cambios notables en este proyecto serán documentados en este archivo.
 
+## [2025.06.14] - 2025-06-14
+
+### Nuevas características
+- **Integración completa con OpenTelemetry** para observabilidad
+- **Instrumentación automática** de Flask, requests y logging
+- **Soporte para trazas distribuidas** con Jaeger + Elasticsearch
+- **Nuevo archivo `app/otel_setup.py`** para configuración de observabilidad
+
+### Mejoras
+- Actualizada documentación del README con información de observabilidad
+- Mejorado el logging con contexto de trazas
+- Agregadas dependencias OpenTelemetry:
+  - opentelemetry-api==1.21.0
+  - opentelemetry-sdk==1.21.0
+  - opentelemetry-instrumentation-flask==0.42b0
+  - opentelemetry-instrumentation-requests==0.42b0
+  - opentelemetry-instrumentation-logging==0.42b0
+  - opentelemetry-exporter-otlp-proto-http==1.21.0
+
+### Cambios técnicos
+- Modificado `app/service.py` para integrar OpenTelemetry
+- Actualizado `app/routes.py` para incluir trazas en endpoints
+- Agregada configuración opcional via variable de entorno `OTEL_EXPORTER_OTLP_ENDPOINT`
+
 ## [2025.05.18] - 2025-05-18
 
 ### Mejoras
