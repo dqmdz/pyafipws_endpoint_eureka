@@ -1,0 +1,16 @@
+graph TD
+    subgraph "Docker Environment"
+        A[API Gateway] --> B(pyafipws-service);
+        B -- "Registra y renueva lease" --> C(Eureka Server);
+    end
+
+    subgraph "AFIP Webservices (Externo)"
+        D[WSAA - Autenticación];
+        E[WSFEv1 - Facturación];
+    end
+
+    B -- "1. Autentica (WSAA)" --> D;
+    B -- "2. Opera (WSFEv1)" --> E;
+
+    style B fill:#cde4ff,stroke:#333,stroke-width:2px
+    style C fill:#fff2cc,stroke:#333,stroke-width:2px

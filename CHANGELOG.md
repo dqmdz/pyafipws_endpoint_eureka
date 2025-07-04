@@ -2,6 +2,20 @@
 
 Todos los cambios notables en este proyecto serán documentados en este archivo.
 
+## [2.1.0] - 2025-07-03
+
+### Nuevas características
+- **Consulta de Comprobantes**: Se agregó un nuevo endpoint `GET /api/afipws/consulta_comprobante` para consultar el estado y los datos de un comprobante ya emitido en AFIP.
+
+### Mejoras
+- **Respuesta de API Mejorada**: La respuesta del endpoint de consulta ahora devuelve una estructura JSON consistente, con un mensaje de AFIP y los datos de la factura, tanto para casos de éxito como para cuando el comprobante no se encuentra.
+- **Documentación Automática**: Se añadieron diagramas de arquitectura y de secuencia (Mermaid) para ilustrar los flujos de los endpoints de facturación y consulta.
+- **CI/CD**: Se actualizó el workflow de GitHub Actions para la generación de documentación, adaptándolo a un proyecto Python y añadiendo los nuevos diagramas.
+
+### Correcciones
+- **Llamada a Librería**: Se corrigió la llamada al método `CompConsultar` para usar los parámetros posicionales correctos que requiere la versión local de la librería `pyafipws`, solucionando el `TypeError`.
+- **Manejo de Atributos**: Se corrigió el acceso al resultado de la consulta para usar el atributo `wsfev1.factura` en lugar del inexistente `ResultGet`, solucionando el `AttributeError`.
+
 ## [2025.06.14] - 2025-06-14
 
 ### Nuevas características
