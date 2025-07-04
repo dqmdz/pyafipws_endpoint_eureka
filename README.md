@@ -123,6 +123,45 @@ Emite un comprobante electrónico.
 - `asociado_numero_comprobante`: Número de comprobante asociado
 - `asociado_fecha_comprobante`: Fecha del comprobante asociado
 
+### GET /api/afipws/consulta_comprobante
+
+Consulta un comprobante electrónico ya emitido.
+
+**Query Parameters:**
+- `tipo_cbte` (integer, required): Tipo de comprobante AFIP (ej. 6 para Factura B).
+- `punto_vta` (integer, required): Punto de venta (ej. 34).
+- `cbte_nro` (integer, required): Número del comprobante a consultar (ej. 100).
+
+**Respuesta Exitosa (200 OK):**
+```json
+{
+  "mensaje": "Comprobante encontrado.",
+  "factura": {
+    "concepto": 1,
+    "tipo_doc": 96,
+    "nro_doc": 28757428,
+    "tipo_cbte": 6,
+    "punto_vta": 34,
+    "cbt_desde": 100,
+    "cbt_hasta": 100,
+    "fecha_cbte": "20240126",
+    "imp_total": 20000.04,
+    "cae": "74049145150923",
+    "resultado": "A",
+    "fch_venc_cae": "20240205",
+    "...": "..."
+  }
+}
+```
+
+**Respuesta Comprobante No Encontrado (200 OK):**
+```json
+{
+  "mensaje": "602: No existen datos en nuestros registros para los parametros ingresados.",
+  "factura": null
+}
+```
+
 ### GET /api/afipws/test
 
 Endpoint de prueba para verificar el estado del servicio.
@@ -132,6 +171,9 @@ Endpoint de prueba para verificar el estado del servicio.
 ```bash
 # Probar el endpoint de test
 curl -X GET "http://localhost:5086/api/afipws/test"
+
+# Consultar un comprobante existente
+curl -X GET "http://localhost:5086/api/afipws/consulta_comprobante?tipo_cbte=6&punto_vta=34&cbte_nro=100"
 
 # Emitir una factura
 curl -X POST "http://localhost:5086/api/afipws/facturador" \

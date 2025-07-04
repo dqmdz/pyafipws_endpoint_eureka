@@ -156,6 +156,75 @@ def facturar(json_data: Dict[str, Any], production: bool = False) -> Dict[str, A
         raise
 
 
+def consultar_comprobante(tipo_cbte: int, punto_vta: int, cbte_nro: int, production: bool = False) -> Dict[str, Any]:
+    """
+    Consulta un comprobante emitido en AFIP.
+
+    Args:
+        tipo_cbte: Tipo de comprobante.
+        punto_vta: Punto de venta.
+        cbte_nro: Número de comprobante.
+        production: Si es True usa ambiente de producción, sino homologación.
+
+    Returns:
+        Dict con los datos del comprobante consultado y el mensaje de AFIP.
+
+    Raises:
+        RuntimeError: Si hay un error inesperado en la comunicación con AFIP.
+    """
+    logger.debug(f"Iniciando consulta de comprobante: tipo={tipo_cbte}, pto_vta={punto_vta}, nro={cbte_nro}")
+
+    try:
+        URL_WSAA = URL_WSAA_PROD if production else URL_WSAA_HOMO
+        URL_WSFEv1 = URL_WSFEv1_PROD if production else URL_WSFEv1_HOMO
+        logger.info(f"Usando URLs - WSAA: {URL_WSAA}, WSFEv1: {URL_WSFEv1}")
+
+        # inicialización AFIP:
+        wsaa = WSAA()
+        wsfev1 = WSFEv1()
+        logger.info("autenticando ...")
+
+        try:
+            ta = wsaa.Autenticar(
+                "wsfe", CERT, PRIVATEKEY, wsdl=URL_WSAA, cache=CACHE, debug=True
+            )
+            logger.info(f"Token de acceso obtenido: {ta}")
+        except Exception as auth_error:
+            logger.error(f"Error en autenticación: {str(auth_error)}")
+            raise
+
+        logger.info("asignando cuit ... ")
+        wsfev1.Cuit = CUIT
+        logger.info("asignando ticket de acceso ...")
+        wsfev1.SetTicketAcceso(ta)
+        logger.info("conectando ...")
+        wsfev1.Conectar(CACHE, URL_WSFEv1)
+        logger.info("... conectado")
+
+        logger.info("consultando comprobante ...")
+        wsfev1.CompConsultar(tipo_cbte, punto_vta, cbte_nro)
+
+        if wsfev1.ErrMsg:
+            # Si el error es que no existe, lo manejamos como un caso de negocio, no un error del sistema.
+            if "602:" in wsfev1.ErrMsg:
+                logger.warning(f"Comprobante no encontrado en AFIP: {wsfev1.ErrMsg}")
+                return {"mensaje": wsfev1.ErrMsg, "factura": None}
+            else:
+                logger.error(f"Error de AFIP al consultar: {wsfev1.ErrMsg}")
+                raise RuntimeError(wsfev1.ErrMsg)
+
+        mensaje_afip = "Comprobante encontrado."
+        if wsfev1.Obs:
+            mensaje_afip += f" Observaciones: {wsfev1.Obs}"
+
+        logger.info(f"Consulta exitosa: {wsfev1.factura}")
+        return {"mensaje": mensaje_afip, "factura": wsfev1.factura}
+
+    except Exception as e:
+        logger.exception("Error inesperado durante la consulta del comprobante")
+        raise
+
+
 class Comprobante:
     def __init__(self, **kwargs: Any) -> None:
         logger.debug(f"Inicializando comprobante con kwargs: {kwargs}")
