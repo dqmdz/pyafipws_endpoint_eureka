@@ -1,10 +1,10 @@
-FROM python:3.12-alpine
+FROM python:3.13-alpine
 
 WORKDIR /app
 
 COPY requirements.txt ./
 
-RUN apk update && apk add bash build-base git
+RUN apk update && apk add bash build-base git libffi-dev
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install git+https://github.com/dqmdz/pyafipws.git@v2025.05.05#egg=pyafipws
