@@ -2,6 +2,15 @@
 
 Todos los cambios notables en este proyecto serán documentados en este archivo.
 
+## [2.2.0] - 2025-07-06
+
+### Nuevas características
+- **Soporte para Python 3.13**: Se ha añadido configuración funcional para ejecutar la aplicación con Python 3.13.
+- **Soporte para Python 3.12**: Se ha añadido configuración funcional para ejecutar la aplicación con Python 3.12.
+
+### Mejoras
+- **Dockerfile de Producción**: Se ha alineado el Dockerfile de producción para que sea compatible con Python 3.13.
+
 ## [2.1.0] - 2025-07-03
 
 ### Nuevas características
@@ -75,4 +84,4 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 
 ### Información no verificable removida
 - Cambios fechados en 2024.07.25, 2024.09.14, 2024.11.07, 2024.12.02, 2025.01.14 no pudieron ser confirmados en el historial de git actual
-- Se recomienda verificar estos cambios con el historial completo del repositorio 
+- Se recomienda verificar estos cambios con el historial completo del repositorio
