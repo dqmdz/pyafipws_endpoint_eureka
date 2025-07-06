@@ -1,13 +1,3 @@
-# pyafipws_endpoint_eureka (ETEREA Fork)
-
-This repository is a fork of the original [pyafipws_endpoint_eureka by dqmdz](https://github.com/dqmdz/pyafipws_endpoint_eureka). It is maintained by ETEREA with specific modifications.
-
-[![Build and Push Docker Image](https://github.com/ETEREA-services/ETEREA.pyafipws-tsa-service/actions/workflows/deploy.yml/badge.svg)](https://github.com/ETEREA-services/ETEREA.pyafipws-tsa-service/actions/workflows/deploy.yml)
-
----
-
-*The following is the documentation from the original repository for reference.*
-
 # pyafipws_endpoint_eureka
 
 [![Build and Push Docker Image](https://github.com/dqmdz/pyafipws_endpoint_eureka/actions/workflows/deploy.yml/badge.svg)](https://github.com/dqmdz/pyafipws_endpoint_eureka/actions/workflows/deploy.yml)
