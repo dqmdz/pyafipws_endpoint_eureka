@@ -1,0 +1,34 @@
+sequenceDiagram
+    participant C as Cliente
+    participant R as app.routes
+    participant F as app.factura_electronica
+    participant P as pyafipws
+    participant A as AFIP
+
+    C->>R: GET /api/afipws/consulta_comprobante
+    activate R
+    R->>F: consultar_comprobante(params)
+    activate F
+    F->>P: WSAA.Autenticar()
+    activate P
+    P->>A: Solicitar Token de Acceso
+    A-->>P: Token de Acceso
+    P-->>F: Token de Acceso (TA)
+    deactivate P
+    F->>P: WSFEv1.SetTicketAcceso(TA)
+    F->>P: WSFEv1.Conectar()
+    F->>P: WSFEv1.CompConsultar(params)
+    activate P
+    P->>A: Consultar Comprobante
+    alt Comprobante Existe
+        A-->>P: Datos del Comprobante
+        P-->>F: wsfev1.factura = {datos}
+    else Comprobante No Existe
+        A-->>P: Error 602
+        P-->>F: wsfev1.ErrMsg = "Error 602..."
+    end
+    deactivate P
+    F-->>R: {"mensaje": "...", "factura": {...}}
+    deactivate F
+    R-->>C: JSON Response
+    deactivate R
