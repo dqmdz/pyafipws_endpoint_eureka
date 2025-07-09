@@ -51,6 +51,7 @@ factura_response_model = afipws_ns.model('FacturaResponse', {
     'cae': fields.String(description='Número de CAE'),
     'vencimiento_cae': fields.String(description='Fecha de vencimiento del CAE'),
     'numero_comprobante': fields.Integer(description='Número de comprobante'),
+    'fecha_comprobante': fields.String(description='Fecha del comprobante'),
     'asociado_tipo_afip': fields.Integer(description='Tipo de comprobante asociado'),
     'asociado_punto_venta': fields.Integer(description='Punto de venta del comprobante asociado'),
     'asociado_numero_comprobante': fields.Integer(description='Número de comprobante asociado'),
