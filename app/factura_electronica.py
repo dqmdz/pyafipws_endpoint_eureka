@@ -144,6 +144,7 @@ def facturar(json_data: Dict[str, Any], production: bool = False) -> Dict[str, A
         json_data["vencimiento_cae"] = cbte.encabezado["fch_venc_cae"]
         json_data["resultado"] = cbte.encabezado["resultado"]
         json_data["numero_comprobante"] = cbte.encabezado["cbte_nro"]
+        json_data["fecha_comprobante"] = cbte.encabezado["fecha_cbte"]
         
         # Logging detallado para debug
         logger.info(f"Resultado final antes de devolver: {json_data}")
