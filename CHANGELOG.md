@@ -2,6 +2,18 @@
 
 Todos los cambios notables en este proyecto serán documentados en este archivo.
 
+## [2.3.0] - 2025-07-09
+
+### Nuevas características
+- **Consulta de Comprobantes**: Se agregó un nuevo endpoint `GET /api/afipws/consulta_comprobante` para consultar el estado y los datos de un comprobante ya emitido en AFIP.
+- **Soporte para Python 3.13**: Se ha añadido configuración funcional para ejecutar la aplicación con Python 3.13.
+- **Soporte para Python 3.12**: Se ha añadido configuración funcional para ejecutar la aplicación con Python 3.12.
+- **Integración con OpenTelemetry**: para observabilidad, instrumentación automática de Flask, requests y logging.
+
+### Mejoras
+- **Dockerfile de Producción**: Se ha alineado el Dockerfile de producción para que sea compatible con Python 3.13.
+- **Documentación**: Se añadieron diagramas de arquitectura y de secuencia (Mermaid) para ilustrar los flujos de los endpoints de facturación y consulta.
+
 ## [2.2.0] - 2025-07-06
 
 ### Nuevas características
