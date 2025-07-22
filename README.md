@@ -1,4 +1,4 @@
-# pyafipws_endpoint_eureka
+# pyafipws_endpoint_consul
 
 [![Build and Push Docker Image](https://github.com/dqmdz/pyafipws_endpoint_eureka/actions/workflows/deploy.yml/badge.svg)](https://github.com/dqmdz/pyafipws_endpoint_eureka/actions/workflows/deploy.yml)
 [![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/release/python-3130/)
@@ -9,12 +9,12 @@
 [![Docker](https://img.shields.io/badge/docker-latest-blue.svg)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/license-GPL%203.0-yellow.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-Servicio REST basado en [pyafipws v2025.05.05](https://github.com/dqmdz/pyafipws) para la emisión de comprobantes electrónicos AFIP (Argentina) con integración a Eureka Service Discovery.
+Servicio REST basado en [pyafipws v2025.05.05](https://github.com/dqmdz/pyafipws) para la emisión de comprobantes electrónicos AFIP (Argentina) con integración a Consul Service Discovery.
 
 ## Características
 
 - Emisión de comprobantes electrónicos AFIP (Facturas, Notas de Crédito/Débito)
-- Integración con Eureka Service Discovery
+- Integración con Consul Service Discovery
 - API REST con Flask 3.0.1
 - **Documentación automática con Swagger/OpenAPI**
 - **Observabilidad con OpenTelemetry** (trazas, métricas y logs)
@@ -44,7 +44,8 @@ Servicio REST basado en [pyafipws v2025.05.05](https://github.com/dqmdz/pyafipws
    - `CERT`: Ruta al certificado (default: user.crt)
    - `PRIVATEKEY`: Ruta a la clave privada (default: user.key)
    - `PRODUCTION`: TRUE/FALSE para ambiente de producción
-   - `EUREKA_PORT`: Puerto de Eureka (default: 8761)
+   - `CONSUL_HOST`: Host de Consul (default: consul-service)
+   - `CONSUL_PORT`: Puerto de Consul (default: 8500)
    - `INSTANCE_PORT`: Puerto del servicio (default: 5086)
    - `CERT_DATE`: Fecha del certificado (default: 2019-01-01)
    - **`OTEL_EXPORTER_OTLP_ENDPOINT`**: Endpoint OpenTelemetry para observabilidad (opcional)

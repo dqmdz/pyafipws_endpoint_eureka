@@ -1,7 +1,7 @@
 graph TD
     subgraph "Docker Environment"
         A[API Gateway] --> B(pyafipws-service);
-        B -- "Registra y renueva lease" --> C(Eureka Server);
+        B -- "Registra y renueva lease" --> C(Consul Server);
     end
 
     subgraph "AFIP Webservices (Externo)"
