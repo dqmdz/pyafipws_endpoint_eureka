@@ -68,7 +68,7 @@ jobs:
           <body>
               <div class="header">
                   <h1>📋 PyAfipWs Endpoint - Documentación del Proyecto</h1>
-                  <p>Servicio para interactuar con los webservices de facturación de AFIP, integrado con Eureka.</p>
+                  <p>Servicio para interactuar con los webservices de facturación de AFIP, integrado con Consul.</p>
                   <p>Última actualización: <span id="update-date"></span></p>
               </div>
               <div id="stats" class="stats"></div>
@@ -207,7 +207,7 @@ jobs:
           
           # Create a simple Home.md as a portal
           cat > Home.md << EOF
-          # 📋 Wiki del Proyecto Eterea Eureka Service
+          # 📋 Wiki del Proyecto Eterea Consul Service
 
           Esta wiki sirve como un portal de acceso rápido a los recursos más importantes del proyecto.
 

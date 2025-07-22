@@ -54,7 +54,7 @@ wrapt==1.16.0
 yarl==1.9.4
 dnspython==2.6.1
 ifaddr==0.2.0
-py_eureka_client==0.11.10
+python-consul==1.1.0
 setuptools<81
 # OpenTelemetry dependencies for observability
 opentelemetry-api==1.25.0

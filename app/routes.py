@@ -242,6 +242,15 @@ class FacturadorResource(Resource):
                 logger.error(f'Error al facturar: {str(e)}')
                 return {"success": False, "error": str(e)}, 500
 
+
+@afipws_ns.route('/health')
+class HealthResource(Resource):
+    @afipws_ns.doc('health_check')
+    def get(self):
+        """Endpoint de chequeo de salud para Consul."""
+        return {"status": "ok"}
+
+
 def register_routes(config: Dict, api):
     """Configura y registra las rutas con la API de Flask-RESTX."""
     # Guardar la configuración en la variable global
